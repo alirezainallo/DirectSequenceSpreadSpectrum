@@ -55,6 +55,11 @@ audiowrite(filename, BPSK, Fs);
 
 %% my demodulation
 % my carrier
+P = 999;
+Q = 1000;
+k = P/Q;
+t_Len = length(t)*k;
+resapledSin = resample(s1, P, Q);
 myCarrier = [];
 for i = 1:length(DSSS)
     myCarrier = [myCarrier s1];
@@ -62,16 +67,15 @@ end
 % my demodulation
 myRx =[];
 myDemod = BPSK.*myCarrier;
-t_Len = length(t);
 for i = 1:length(pn_code)
-    sumVal = sum(myDemod((((i-1)*t_Len)+1):i*t_Len));
+    sumVal = sum(myDemod(round((((i-1)*t_Len)+1)):round(i*t_Len)));
     if(sumVal > 0)
         myRx = [myRx 1];
     else
         myRx = [myRx -1];
     end    
 end
-myCorr = xcorr(myRx,pn_code);
+% myCorr = [myCorr xcorr(myRx,pn_code)];
 resultDebug = myRx.*pn_code;
 if resultDebug == message
     fprintf("equals\n");
