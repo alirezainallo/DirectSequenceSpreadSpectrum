@@ -1,8 +1,8 @@
-clear all;
+clear all;close all;clc;
 
 %% parameters
-Fs = 1000;
-fc = 100;
+Fs = 48000;
+fc = 1000;
 fp = 4;
 bit_t = 0.1;
 
@@ -42,6 +42,15 @@ for i = 1:length(DSSS)
     end 
     carrier = [carrier s1];
 end    
+
+%% save audio
+filename = "BPSK.wav";
+audiowrite(filename, BPSK, Fs);
+
+% %% load audio
+% filename = "BPSK_rec.wav";
+% [BPSK, Fs] = audioread(filename);
+% BPSK = BPSK';
 
 %% demodulation
 rx =[];
