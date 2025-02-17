@@ -12,7 +12,7 @@ for bit = 1:length(m)
    if(m(bit)==0)
         m(bit) = -1;
    end
-end 
+end
 
 message =  repmat(m,fp,1);
 message =  reshape(message,1,[]);
@@ -48,38 +48,52 @@ end
 filename = "BPSK.wav";
 audiowrite(filename, BPSK, Fs);
 
-% %% load audio
-% filename = "BPSK_rec.wav";
-% [BPSK, Fs] = audioread(filename);
-% BPSK = BPSK';
+%% load audio
+filename = "BPSK_rec.wav";
+[BPSK, Fs] = audioread(filename);
+BPSK = BPSK';
 
 %% my demodulation
 % my carrier
-P = 999;
+P = 1001;
 Q = 1000;
-k = P/Q;
-t_Len = length(t)*k;
-resapledSin = resample(s1, P, Q);
-myCarrier = [];
-for i = 1:length(DSSS)
-    myCarrier = [myCarrier s1];
+myCorr = [];
+for i = 990:1010
+    P = i;
+    k = P/Q;
+    t_Len = length(t)*k;
+    resapledSin = resample(s1, P, Q);
+    myCarrier = [];
+    for i = 1:length(DSSS)
+        myCarrier = [myCarrier s1];
+    end
+    % my demodulation
+    myRx =[];
+    myDemod = BPSK.*myCarrier;
+    if t_Len*length(pn_code) > length(myDemod)
+        for i = length(myDemod):t_Len*length(pn_code)
+            myDemod(end+1) = 0;
+        end
+    end
+    for i = 1:length(pn_code)
+        sumVal = sum(myDemod(round((((i-1)*t_Len)+1)):round(i*t_Len)));
+        if(sumVal > 0)
+            myRx(end+1) =  1;
+        else
+            myRx(end+1) = -1;
+        end    
+    end
+    myCorr(end+1, :) = xcorr(myRx,pn_code);
+    resultDebug = myRx.*pn_code;
+    if resultDebug == message
+        fprintf("%d)equals\n", P);
+    end
 end
-% my demodulation
-myRx =[];
-myDemod = BPSK.*myCarrier;
-for i = 1:length(pn_code)
-    sumVal = sum(myDemod(round((((i-1)*t_Len)+1)):round(i*t_Len)));
-    if(sumVal > 0)
-        myRx = [myRx 1];
-    else
-        myRx = [myRx -1];
-    end    
-end
-% myCorr = [myCorr xcorr(myRx,pn_code)];
-resultDebug = myRx.*pn_code;
-if resultDebug == message
-    fprintf("equals\n");
-end
+
+%% myCorr plot res
+figure();
+mesh(abs(myCorr));
+
 %% demodulation
 rx =[];
 for i = 1:length(pn_code)
