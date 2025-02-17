@@ -48,10 +48,10 @@ end
 filename = "BPSK.wav";
 audiowrite(filename, BPSK, Fs);
 
-%% load audio
-filename = "BPSK_rec.wav";
-[BPSK, Fs] = audioread(filename);
-BPSK = BPSK';
+% %% load audio
+% filename = "BPSK_rec.wav";
+% [BPSK, Fs] = audioread(filename);
+% BPSK = BPSK';
 
 %% my demodulation
 % my carrier
@@ -59,11 +59,15 @@ P = 100000;
 Q = 100000;
 myCorr = [];
 figure();
-for i = 99990:100000
+for i = 99900:100100
     P = i;
     k = P/Q;
-    t_Len = length(t)*k;
-    resapledSin = resample(s1, P, Q);
+    % t_Len = length(t)*k;
+    bit_t_ = bit_t * k;
+    t_ = 0:1/Fs:(bit_t_-1/Fs);
+    t_Len = length(t_);
+    resapledSin = cos(2*pi*fc*t_/k);
+    % resapledSin = resample(s1, P, Q);
     myCarrier = [];
     % for i = 1:length(DSSS)
     %     myCarrier = [myCarrier s1];
