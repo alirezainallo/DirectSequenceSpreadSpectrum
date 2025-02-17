@@ -107,6 +107,8 @@ for i = fac*9950:fac*10050
     resultDebug = myRx.*pn_code;
     if resultDebug == message
         fprintf("%d)equals\n", P);
+    elseif resultDebug == ~message
+        fprintf("%d)~equals\n", P);
     else
         fprintf("%d\n", P);
     end
