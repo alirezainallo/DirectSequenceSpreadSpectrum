@@ -3,7 +3,7 @@ clear all;close all;clc;
 %% parameters
 Fs = 48000;
 fc = 1000;
-fp = 32;
+fp = 4;
 bit_t = 0.1;
 
 %% message generation with BPSK
@@ -19,8 +19,8 @@ message =  reshape(message,1,[]);
 
 %% PN generation and multiply with message
 % pn_code = randi([0,1],1,length(m)*fp);
-pn_code = [1,0,0,1,0,1,1,0,0,0,1,0,1,1,1,1,0,0,1,1,0,0,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,0,1,0,0,1,1,1,0,0,0,0,1,1,0,1,0,1,0,1,1,1,0,0,0,0,1,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,0,0,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,1,0,1,1,0,1,1,1,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,0,1,1,1,0,1,1,1,0,0,0,1,1,0,1,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,1,1,1,0,1,1,0,0,1,1,1,0,0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,0,1];
-
+% pn_code = [1,0,0,1,0,1,1,0,0,0,1,0,1,1,1,1,0,0,1,1,0,0,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,0,1,0,0,1,1,1,0,0,0,0,1,1,0,1,0,1,0,1,1,1,0,0,0,0,1,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,0,0,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,1,0,1,1,0,1,1,1,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,0,1,1,1,0,1,1,1,0,0,0,1,1,0,1,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,1,1,1,0,1,1,0,0,1,1,1,0,0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,0,1]; %32
+pn_code = [1,0,0,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0];%4
 for bit = 1:length(pn_code)
    if(pn_code(bit)==0)
         pn_code(bit) = -1;
@@ -48,18 +48,19 @@ end
 filename = "BPSK.wav";
 audiowrite(filename, BPSK, Fs);
 
-% %% load audio
-% filename = "BPSK_rec.wav";
-% [BPSK, Fs] = audioread(filename);
-% BPSK = BPSK';
+% load audio
+filename = "BPSK_rec.wav";
+[BPSK, Fs] = audioread(filename);
+BPSK = BPSK';
 
 %% my demodulation
 % my carrier
-P = 100000;
-Q = 100000;
+fac = 4;
+P = 10000;
+Q = 10000*fac;
 myCorr = [];
 figure();
-for i = 99900:100100
+for i = fac*9950:fac*10050
     P = i;
     k = P/Q;
     % t_Len = length(t)*k;
@@ -68,16 +69,23 @@ for i = 99900:100100
     t_Len = length(t_);
     resapledSin = cos(2*pi*fc*t_/k);
     % resapledSin = resample(s1, P, Q);
-    myCarrier = [];
-    % for i = 1:length(DSSS)
-    %     myCarrier = [myCarrier s1];
+    % myCarrier = [];
+    % % for i = 1:length(DSSS)
+    % %     myCarrier = [myCarrier s1];
+    % % end
+    % for i = 1:length(BPSK)/length(resapledSin)
+    %     myCarrier = [myCarrier resapledSin];
     % end
-    for i = 1:length(BPSK)/length(resapledSin)
-        myCarrier = [myCarrier resapledSin];
-    end
-    for i = length(myCarrier):length(BPSK)-1
-        myCarrier(end+1) = resapledSin(mod(i-length(myCarrier), length(resapledSin))+1);
-    end
+    % for i = length(myCarrier):length(BPSK)-1
+    %     myCarrier(end+1) = resapledSin(mod(i-length(myCarrier), length(resapledSin))+1);
+    % end
+    myCarrier = [];
+    myCarrier = resample(carrier, P, Q);
+
+    targetLength = length(BPSK);
+    myCarrier = myCarrier(1:min(length(myCarrier), targetLength));  % اگر بلندتر بود، برش می‌خورد
+    myCarrier(end+1:targetLength) = 0;
+    
     % my demodulation
     myRx =[];
     myDemod = BPSK.*myCarrier;
@@ -101,6 +109,10 @@ for i = 99900:100100
         fprintf("%d)equals\n", P);
     else
         fprintf("%d\n", P);
+    end
+    tmp = (P-fac*9800);
+    if tmp == 178
+        fprintf("Now\n");
     end
 end
 
