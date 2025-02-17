@@ -55,21 +55,29 @@ BPSK = BPSK';
 
 %% my demodulation
 % my carrier
-P = 1001;
-Q = 1000;
+P = 100000;
+Q = 100000;
 myCorr = [];
-for i = 990:1010
+figure();
+for i = 99990:100000
     P = i;
     k = P/Q;
     t_Len = length(t)*k;
     resapledSin = resample(s1, P, Q);
     myCarrier = [];
-    for i = 1:length(DSSS)
-        myCarrier = [myCarrier s1];
+    % for i = 1:length(DSSS)
+    %     myCarrier = [myCarrier s1];
+    % end
+    for i = 1:length(BPSK)/length(resapledSin)
+        myCarrier = [myCarrier resapledSin];
+    end
+    for i = length(myCarrier):length(BPSK)-1
+        myCarrier(end+1) = resapledSin(mod(i-length(myCarrier), length(resapledSin))+1);
     end
     % my demodulation
     myRx =[];
     myDemod = BPSK.*myCarrier;
+    plot(myDemod);
     if t_Len*length(pn_code) > length(myDemod)
         for i = length(myDemod):t_Len*length(pn_code)
             myDemod(end+1) = 0;
@@ -87,6 +95,8 @@ for i = 990:1010
     resultDebug = myRx.*pn_code;
     if resultDebug == message
         fprintf("%d)equals\n", P);
+    else
+        fprintf("%d\n", P);
     end
 end
 
@@ -94,53 +104,53 @@ end
 figure();
 mesh(abs(myCorr));
 
-%% demodulation
-rx =[];
-for i = 1:length(pn_code)
-    if(pn_code(i)==1)
-        rx = [rx BPSK((((i-1)*length(t))+1):i*length(t))];
-    else
-        rx = [rx (-1)*BPSK((((i-1)*length(t))+1):i*length(t))];
-    end    
-end 
-
-demod = rx.*carrier;
-result = [];
-for i = 1:length(m)
-   x = length(t)*fp;
-   cx = sum(carrier(((i-1)*x)+1:i*x).*demod(((i-1)*x)+1:i*x));
-   if(cx>0)
-       result = [result 1];
-   else
-       result = [result -1];
-   end    
-end    
-
-pn_codeWrong = randi([0,1],1,length(m)*fp);
-resultWrong = [];
-rx2 =[];
-for i = 1:length(pn_code)
-    if(pn_codeWrong(i)==1)
-        rx2 = [rx2 BPSK((((i-1)*length(t))+1):i*length(t))];
-    else
-        rx2 = [rx2 (-1)*BPSK((((i-1)*length(t))+1):i*length(t))];
-    end    
-end 
-
-demod2 = rx2.*carrier;
-for i = 1:length(m)
-   x = length(t)*fp;
-   cx = sum(carrier(((i-1)*x)+1:i*x).*demod2(((i-1)*x)+1:i*x));
-   if(cx>0)
-       resultWrong = [resultWrong 1];
-   else
-       resultWrong = [resultWrong -1];
-   end    
-end    
-message1 =  repmat(result,fp,1);
-message1 =  reshape(message1,1,[]);
-message2 =  repmat(resultWrong,fp,1);
-message2 =  reshape(message2,1,[]);
+% %% demodulation
+% rx =[];
+% for i = 1:length(pn_code)
+%     if(pn_code(i)==1)
+%         rx = [rx BPSK((((i-1)*length(t))+1):i*length(t))];
+%     else
+%         rx = [rx (-1)*BPSK((((i-1)*length(t))+1):i*length(t))];
+%     end    
+% end 
+% 
+% demod = rx.*carrier;
+% result = [];
+% for i = 1:length(m)
+%    x = length(t)*fp;
+%    cx = sum(carrier(((i-1)*x)+1:i*x).*demod(((i-1)*x)+1:i*x));
+%    if(cx>0)
+%        result = [result 1];
+%    else
+%        result = [result -1];
+%    end    
+% end    
+% 
+% pn_codeWrong = randi([0,1],1,length(m)*fp);
+% resultWrong = [];
+% rx2 =[];
+% for i = 1:length(pn_code)
+%     if(pn_codeWrong(i)==1)
+%         rx2 = [rx2 BPSK((((i-1)*length(t))+1):i*length(t))];
+%     else
+%         rx2 = [rx2 (-1)*BPSK((((i-1)*length(t))+1):i*length(t))];
+%     end    
+% end 
+% 
+% demod2 = rx2.*carrier;
+% for i = 1:length(m)
+%    x = length(t)*fp;
+%    cx = sum(carrier(((i-1)*x)+1:i*x).*demod2(((i-1)*x)+1:i*x));
+%    if(cx>0)
+%        resultWrong = [resultWrong 1];
+%    else
+%        resultWrong = [resultWrong -1];
+%    end    
+% end    
+% message1 =  repmat(result,fp,1);
+% message1 =  reshape(message1,1,[]);
+% message2 =  repmat(resultWrong,fp,1);
+% message2 =  reshape(message2,1,[]);
 
 
 
