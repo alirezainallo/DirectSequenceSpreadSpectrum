@@ -4,7 +4,7 @@ clear all;close all;clc;
 Fs = 48000;
 fc = 1000;
 fp = 4;
-bit_t = 0.1;
+bit_t = 0.001;
 
 %% message generation with BPSK
 m = [0 0 1 1 1 1 0 0];
