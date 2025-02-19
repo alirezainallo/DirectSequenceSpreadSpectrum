@@ -1,0 +1,37 @@
+clear all;close all;clc;
+
+%% parameters
+Fs = 48000;
+fc = 1000;
+fp = 32;
+bit_t = 0.001;
+
+%% message generation with BPSK
+m = [0 0 1 1 1 1 0 0];
+for bit = 1:length(m)
+   if(m(bit)==0)
+        m(bit) = -1;
+   end
+end
+m(m == 0) = -1;
+
+message =  repmat(m,fp,1);
+message =  reshape(message,1,[]);
+
+%% PN generation and multiply with message
+% pn_code = randi([0,1],1,fp);
+pn_code = [1,0,0,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0];
+
+pn_code(pn_code == 0) = -1;
+
+%% PN to data
+DSSS = [];
+for i = 1:length(m)
+    messageFtame =  repmat(m(i),fp,1);
+    messageFtame = reshape(messageFtame,1,[]);
+    result = messageFtame.*pn_code;
+    DSSS(end+1) = result;
+end
+
+%% bar DSSS
+bar(DSSS);

@@ -31,8 +31,10 @@ DSSS = message.*pn_code;
 
 %% create carrier and multipy with encoded sequence
 t = 0:1/Fs:(bit_t-1/Fs);
-s0 = -1*cos(2*pi*fc*t);
-s1 = cos(2*pi*fc*t);
+s0 = -1*sin(2*pi*fc*t);
+s1 = sin(2*pi*fc*t);
+% s0 = -1*cos(2*pi*fc*t);
+% s1 = cos(2*pi*fc*t);
 carrier = [];
 BPSK = [];
 for i = 1:length(DSSS)
